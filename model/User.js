@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   picture: { type: String },
   refreshToken: { type: String },
+  role : { type: String, enum: ['User', 'Admin'], default: 'User', required: true },
+  Bookings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],
   createdAt: { type: Date, default: Date.now }
 });
 

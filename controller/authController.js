@@ -1,7 +1,6 @@
-// controllers/authController.js
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import User from '../model/User.js'; // Adjust the path if necessary
+import User from '../model/User.js';
 import { config } from 'dotenv';
 config();
 

@@ -1,0 +1,38 @@
+import mongoose from 'mongoose';
+
+const bedSchema = new mongoose.Schema({
+  hospital: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Hospital',
+    required: true,
+  },
+  ward: {
+    type: String,
+    required: true, // Ward in the hospital, e.g., 'ICU', 'General', 'Pediatrics'
+  },
+  bedNumber: {
+    type: String,
+    required: true,
+  },
+  type: {
+    type: String,
+    enum: ['General', 'ICU', 'Ventilator', 'Private', 'Semi-Private'], // Different types of beds available
+    required: true,
+    default: 'General',
+  },
+  status: {
+    type: String,
+    enum: ['Available', 'Occupied', 'Under Maintenance'],
+    default: 'Available',
+  },
+  booking: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Booking',
+    required: function () {
+        return this.status==='Occupied';
+    }
+  },
+}, { timestamps: true });
+
+const Bed = mongoose.model('Bed', bedSchema);
+export default Bed;
