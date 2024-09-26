@@ -1,7 +1,7 @@
 import Hospital from "../model/Hospital.js";
 import Doctor from "../model/Doctor.js"
 import Bed from "../model/Bed.js";
-import mongoose from "mongoose";
+
 
 export const addHospital = async (req, res) => {
     const { name, phoneNumber, address, totalBeds, emergencyServices } = req.body;
@@ -118,18 +118,18 @@ export const getHospitals = async (req, res) => {
     }
 }
 
-export const setAppointment = async (req,res)=>{
+export const setAppointment = async (req, res) => {
     const { hospitalId, appointmentTime, numAppointments, docterId } = req.body;
 
     try {
-        const doctor= await Doctor.findById(docterId);
-        if(!doctor)
+        const doctor = await Doctor.findById(docterId);
+        if (!doctor)
             return res.status(400).json({ message: "Invalid Doctor ID" });
-        else if(doctor.hospital.some(h=>h.hospitalId.toString() === hospitalId))
-            return res.status(400).json({message: "Hospital Timing Already Exists"});
-        else{
+        else if (doctor.hospital.some(h => h.hospitalId.toString() === hospitalId))
+            return res.status(400).json({ message: "Hospital Timing Already Exists" });
+        else {
             const hospitalData = {
-                hospitalId: new mongoose.Types.ObjectId(hospitalId),
+                hospitalId: hospitalId,
                 hospitalTimings: {
                     start: appointmentTime.start,
                     end: appointmentTime.end,
@@ -139,7 +139,7 @@ export const setAppointment = async (req,res)=>{
             doctor.hospital.push(hospitalData);
             await doctor.save();
 
-            return res.status(200).json({message: "Appointment Data set successfully"});
+            return res.status(200).json({ message: "Appointment Data set successfully" });
         }
     } catch (error) {
         console.error('Error during updating hospital appointment Data:', error);
@@ -147,26 +147,64 @@ export const setAppointment = async (req,res)=>{
     }
 }
 
-export const updateAppointment = async (req,res)=>{
+export const updateAppointment = async (req, res) => {
     const { hospitalId, appointmentTime, numAppointments, docterId } = req.body;
 
     try {
-        const doctor= await Doctor.findById(docterId);
-        if(!doctor)
+        const doctor = await Doctor.findById(docterId);
+        if (!doctor)
             return res.status(400).json({ message: "Invalid Doctor ID" });
         const hospitalIndex = doctor.hospital.findIndex(h => h.hospitalId.equals(hospitalId));
-        if(hospitalIndex === -1)
-            return res.status(400).json({message: "Hospital Timing doesn't Exists"});
-        else{
+        if (hospitalIndex === -1)
+            return res.status(400).json({ message: "Hospital Timing doesn't Exists" });
+        else {
             doctor.hospital[hospitalIndex].hospitalTimings = { start: appointmentTime.start, end: appointmentTime.end };
             doctor.hospital[hospitalIndex].maxAppointment = numAppointments;
 
             await doctor.save();
-            return res.status(200).json({message: "Appointment Data updated successfully"});
+            return res.status(200).json({ message: "Appointment Data updated successfully" });
         }
-        
+
     } catch (error) {
         console.error('Error during updating hospital appointment Data:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export const getDoctors = async (req, res) => {
+    const { hospitalId } = req.body;
+
+    try {
+        const hospital = await Hospital.findById(hospitalId);
+        const doctors = [];
+        if (!hospital)
+            return res.status(400).json({ message: "Invalid Hopsital Id" });
+        else if (hospital.doctors.length === 0)
+            return res.status(400).json({ message: "No Doctors Found" });
+        hospital.doctors.forEach(async d => {
+            const doc = await Doctor.findById(d).select('_id name specialty contactNumber hospital');
+            doctors.push(doc);
+        });
+        return res.status(200).json({ doctors });
+
+    } catch (error) {
+        console.error('Error during retrieving doctors Data:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export const getDocNameId = async (req, res) => {
+    const { hospitalId } = req.body;
+
+    try {
+        const hospital = await Hospital.findById(hospitalId);
+        if (!hospital)
+            return res.status(400).json({ message: "Invalid Hopsital Id" });
+        const doctors =  await Doctor.find({ 'hospital.hospitalId' : { $ne: hospitalId } }).select('_id name specialty contactNumber');
+        return res.status(200).json({ doctors: doctors.length ? doctors : [] });
+
+    } catch (error) {
+        console.error('Error during retrieving doctors Data:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 }

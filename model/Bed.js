@@ -8,7 +8,8 @@ const bedSchema = new mongoose.Schema({
   },
   ward: {
     type: String,
-    required: true, // Ward in the hospital, e.g., 'ICU', 'General', 'Pediatrics'
+    enum: ['ICU', 'General', 'Pediatrics'],
+    required: true,
   },
   bedNumber: {
     type: String,
