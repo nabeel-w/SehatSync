@@ -28,6 +28,7 @@ const doctorSchema = new mongoose.Schema({
             end: { type: String },   // Example: '01:00 PM'
         },
         maxAppointment: { type: Number },
+        Appointments:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],
     }],
     privateClinic: {
         clinicName: { type: String },
@@ -44,6 +45,7 @@ const doctorSchema = new mongoose.Schema({
             end: { type: String },   // Example: '06:00 PM'
         },
         maxAppointment: { type: Number },
+        Appointments:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],
     },
 }, { timestamps: true });
 

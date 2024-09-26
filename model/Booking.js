@@ -11,14 +11,14 @@ const bookingSchema = new mongoose.Schema({
     },
     bookingType: {
       type: String,
-      enum: ['Doctor Appointment', 'Bed Booking'],
+      enum: ['Doctor Appointment', 'Bed Booking', 'Clinic Appointment'],
       required: true,
     },
     doctor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Doctor',
       required: function () {
-        return this.bookingType === 'Doctor Appointment';
+        return this.bookingType === 'Doctor Appointment' || this.bookingType === 'Clinic Appointment';
       },
     },
     hospital: {
@@ -38,7 +38,7 @@ const bookingSchema = new mongoose.Schema({
     appointmentDate: {
       type: Date,
       required: function () {
-        return this.bookingType === 'Doctor Appointment';
+        return this.bookingType === 'Doctor Appointment' || this.bookingType === 'Clinic Appointment';
       },
     },
     checkInDate: {
@@ -52,7 +52,7 @@ const bookingSchema = new mongoose.Schema({
     }, // Optional, only for bed bookings
     status: {
       type: String,
-      enum: ['Pending', 'Confirmed', 'Cancelled'],
+      enum: ['Pending', 'Confirmed', 'Cancelled', 'Visited'],
       default: 'Pending',
     },
   }, { timestamps: true });
