@@ -5,6 +5,7 @@ import adminRoute from './routes/adminRoute.js';
 import bedRoute from './routes/bedRoute.js';
 import doctorRoute from './routes/doctorRoute.js';
 import hospitalRoute from './routes/hospitalRoute.js';
+import bookingRoute from './routes/bookingRoute.js';
 import { connectDb } from './utils/db.js'
 import { config } from 'dotenv';
 config();
@@ -21,6 +22,7 @@ app.use('/admin', adminRoute);
 app.use('/bed', bedRoute);
 app.use('/doctor', doctorRoute);
 app.use('/hospital', hospitalRoute);
+app.use('/booking',bookingRoute);
 
 
 
