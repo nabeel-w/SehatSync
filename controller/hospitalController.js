@@ -1,6 +1,7 @@
 import Hospital from "../model/Hospital.js";
 import Doctor from "../model/Doctor.js"
 import Bed from "../model/Bed.js";
+import Booking from "../model/Booking.js";
 
 
 export const addHospital = async (req, res) => {
@@ -200,11 +201,44 @@ export const getDocNameId = async (req, res) => {
         const hospital = await Hospital.findById(hospitalId);
         if (!hospital)
             return res.status(400).json({ message: "Invalid Hopsital Id" });
-        const doctors =  await Doctor.find({ 'hospital.hospitalId' : { $ne: hospitalId } }).select('_id name specialty contactNumber');
+        const doctors = await Doctor.find({ 'hospital.hospitalId': { $ne: hospitalId } }).select('_id name specialty contactNumber');
         return res.status(200).json({ doctors: doctors.length ? doctors : [] });
 
     } catch (error) {
         console.error('Error during retrieving doctors Data:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export const getBedBookings = async (req, res) => {
+    const { hospitalId } = req.body;
+    try {
+        const hospital = await Hospital.findById(hospitalId);
+        if (!hospital)
+            return res.status(400).json({ message: "Invalid Hopsital Id" });
+        const bookings = await Booking.find({ hospital: hospitalId, bookingType: 'Bed Booking', status: 'Confirmed' })
+            .select('_id patientName patientContact bed checkInDate');
+        return res.status(200).json({ bookings: bookings.length ? bookings : [] });
+
+    } catch (error) {
+        console.error('Error during retrieving Bed Booking Data:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export const getDoctorBookings = async (req, res) =>{
+    const { hospitalId, doctorId } = req.body;
+    try {
+        const hospital = await Hospital.findById(hospitalId);
+        const doctor = await Doctor.findById(doctorId);
+        if (!hospital || !doctor)
+            return res.status(400).json({ message: "Invalid Hopsital OR Doctor Id" });
+        const bookings = await Booking.find({ hospital: hospitalId, doctor: doctorId, bookingType: 'Doctor Appointment', status: 'Confirmed' })
+        .select('_id patientName patientContact doctor appointmentDate');
+
+        return res.status(200).json({ bookings: bookings.length ? bookings : [] });
+    } catch (error) {
+        console.error('Error during retrieving Doctor Appointment Data:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 }

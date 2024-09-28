@@ -1,3 +1,4 @@
+import Booking from "../model/Booking.js";
 import Doctor from "../model/Doctor.js"
 
 export const initDoctor = async (req, res) => {
@@ -84,10 +85,26 @@ export const getPrivateDoctor = async (req, res) => {
             .select('name specialty contactNumber privateClinic _id')
             .limit(limit)
             .sort({ _id: 1 });
-        return res.status(200).json({doctors: doctors.length ? doctors : []});
+        return res.status(200).json({ doctors: doctors.length ? doctors : [] });
 
     } catch (error) {
         console.error('Error during fetching doctors:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export const getClinicBookings = async (req, res) => {
+    const { doctorId } = req.body;
+    try {
+        const doctor = await Doctor.findById(doctorId);
+        if (!doctor)
+            return res.status(400).json({ message: "Invalid Doctor Id" });
+        const bookings = await Booking.find({ doctor: doctorId, bookingType: 'Clinic Appointment', status: 'Confirmed' })
+            .select('_id patientName patientContact appointmentDate')
+
+        return res.status(200).json({ bookings: bookings.length ? bookings : [] });
+    } catch (error) {
+        console.error('Error during retrieving Clinic Appointment Data:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 }
