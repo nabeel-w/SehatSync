@@ -7,10 +7,6 @@ import Booking from "../model/Booking.js";
 export const addHospital = async (req, res) => {
     const { name, phoneNumber, address, totalBeds, emergencyServices } = req.body;
 
-    if (!name || !phoneNumber || !address || !totalBeds || emergencyServices === undefined) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
-
     try {
         const hospitalFound = await Hospital.findOne({ contactNumber: phoneNumber })
         if (hospitalFound)
@@ -34,10 +30,6 @@ export const addHospital = async (req, res) => {
 
 export const addDoctor = async (req, res) => {
     const { doctorId, hospitalId, timing, numAppointments } = req.body;
-
-    if (!doctorId || !hospitalId || !timing || !numAppointments) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
 
     try {
         const hospital = await Hospital.findById(hospitalId);
@@ -65,10 +57,6 @@ export const addDoctor = async (req, res) => {
 
 export const initHospitalBeds = async (req, res) => {
     const { hospitalId, wardData } = req.body;
-
-    if (!hospitalId || !wardData) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
 
     try {
         const hospitalExists = await Hospital.exists({ _id: hospitalId });
@@ -100,9 +88,6 @@ export const initHospitalBeds = async (req, res) => {
 
 export const getHospitals = async (req, res) => {
     const { city, emergency, lastId } = req.body
-
-    if (!city || emergency === undefined)
-        return res.status(400).json({ message: 'Some Params are missing' });
 
     try {
         const limit = 10;
