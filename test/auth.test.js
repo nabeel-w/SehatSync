@@ -1,9 +1,11 @@
 import request from 'supertest';
 import app from '../index.js'; // Import your Express app
 import { connectDb, disconnectDb } from '../utils/db.js';
+import User from '../model/User.js';
 
 beforeAll(async ()=>{
   connectDb();
+  await User.deleteMany({});
 })
 
 afterAll(async () =>{

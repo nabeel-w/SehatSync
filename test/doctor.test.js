@@ -3,6 +3,8 @@ import app from '../index.js'; // Import your Express app
 import Booking from '../model/Booking.js';
 import { connectDb, disconnectDb } from '../utils/db.js';
 import Doctor from '../model/Doctor.js';
+import bcrypt from 'bcrypt';
+import User from '../model/User.js';
 
 let authToken; // Variable to hold the auth token
 
@@ -11,16 +13,31 @@ beforeAll(async () => {
     connectDb();
     await Doctor.deleteMany({});
     await Booking.deleteMany({});
+    await User.deleteMany({});
+    const email = "john@gmail.com"
+    const password = "StrongPass123!";
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const user = new User({
+        name: 'Admin',
+        email,
+        password:hashedPassword,
+        role:'Admin',
+    })
+    await user.save();
     const loginResponse = await request(app)
         .post('/admin/login')
         .send({
-            email: 'john@gmail.com', // Use a valid username
-            password: 'StrongPass123!' // Use a valid password
+            email: email, // Use a valid username
+            password: password // Use a valid password
         });
     authToken = loginResponse.body.accessToken;
 });
 
 afterAll(async () => {
+    await Doctor.deleteMany({});
+    await Booking.deleteMany({});
+    await User.deleteMany({});
     await disconnectDb();
 });
 
@@ -129,11 +146,17 @@ describe('Doctor Routes', () => {
         });
 
         it('should return an error for a doctor without a private clinic', async () => {
+            const newDoctor = new Doctor({
+                name: 'Dr. John Doe',
+                specialty: 'Cardiology',
+                contactNumber: '9999999991'
+            })
+            await newDoctor.save();
             const response = await request(app)
                 .patch('/admin/update-timing')
                 .set('Authorization', `${authToken}`)
                 .send({
-                    doctorId: '651981c4b0987d67c93e4567',
+                    doctorId: newDoctor._id,
                     timings: {
                         start: '10:00',
                         end: '18:00'
@@ -141,7 +164,7 @@ describe('Doctor Routes', () => {
                 });
 
             expect(response.status).toBe(400);
-            expect(response.body.message).toBe("Private Clinic Information doesn't exist");
+            expect(response.body.message).toBe("Private Clinic Information doesn't exists");
         });
     });
 
