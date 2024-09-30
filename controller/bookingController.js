@@ -125,11 +125,11 @@ export const bookingCancel = async (req, res) => {
     try {
         const booking = await Booking.findById(bookingId).session(session);
         const user = await User.findById(userId).session(session);
-        if (!booking){
+        if (!booking) {
             await session.abortTransaction();
             return res.status(400).json({ message: "Invalid Booking Id" });
         }
-        else if (!user.Bookings.includes(bookingId) || user.role !== 'Admin'){
+        else if (!user.Bookings.includes(bookingId) || user.role !== 'Admin') {
             await session.abortTransaction();
             return res.status(404).json({ message: "Booking Access Forbidden" });
         }
@@ -137,15 +137,15 @@ export const bookingCancel = async (req, res) => {
         switch (bookingType) {
             case 'Bed Booking':
                 const bed = await Bed.findByIdAndUpdate(booking.bed, { status: 'Available', booking: undefined }, { session, new: true });
-                const hospital = await Hospital.findByIdAndUpdate(booking.hospital, { $inc : { bedsAvailable: 1 } }, { session, new: true });
-                if (!bed || !hospital){
+                const hospital = await Hospital.findByIdAndUpdate(booking.hospital, { $inc: { bedsAvailable: 1 } }, { session, new: true });
+                if (!bed || !hospital) {
                     await session.abortTransaction();
                     return res.status(400).json({ message: 'Invalid Bed Booking' });
                 }
                 break;
             case 'Clinic Appointment':
                 const doctorAppointment = await Doctor.findByIdAndUpdate(booking.doctor, { $pull: { 'privateClinic.Appointments': bookingId } }, { session, new: true });
-                if(!doctorAppointment){
+                if (!doctorAppointment) {
                     await session.abortTransaction();
                     return res.status(400).json({ message: "Invalid Clinic Appointment Booking" });
                 }
@@ -161,7 +161,7 @@ export const bookingCancel = async (req, res) => {
                     },
                     { session, new: true }
                 );
-                if (!doctor){
+                if (!doctor) {
                     await session.abortTransaction();
                     return res.status(400).json({ message: "Invalid Appointment Booking" });
                 }
@@ -186,5 +186,23 @@ export const bookingCancel = async (req, res) => {
         }
 
         return res.status(500).json({ message: 'Server error during appointment booking' });
+    }
+}
+
+export const getBookings = async (req, res) => {
+    const userId = req.user.userId;
+    try {
+        const user = await User.findById(userId);
+        const bookings = await Booking.find({ _id: { $in: user.Bookings } })
+            .select('hospital doctor bed appointmentDate checkInDate bookingType status')
+            .populate('hospital', 'name contactNumber address')
+            .populate('doctor', 'name specialty contactNumber hospital.hospitalTimings privateClinic')
+            .populate('bed', 'ward bedNumber type')
+            .exec();
+
+        return res.status(200).json({ bookings: bookings.length ? bookings : [] });
+    } catch (error) {
+        console.error('Error during fetching Bookings Data:', error);
+        return res.status(500).json({ message: 'Server error' });
     }
 }

@@ -24,9 +24,16 @@ app.use('/doctor', doctorRoute);
 app.use('/hospital', hospitalRoute);
 app.use('/booking',bookingRoute);
 
+function startServer() {
+    connectDb(); // Connect to the database
+    return app.listen(PORT, () => {
+        console.log(`Server started at port ${PORT}`);
+    });
+}
 
+// Only start the server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+    startServer();
+}
 
-app.listen(PORT,()=>{
-    connectDb();
-    console.log(`Server started at port ${PORT}`);
-});
+export default app;

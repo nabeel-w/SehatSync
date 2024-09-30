@@ -14,7 +14,7 @@ export const initDoctor = async (req, res) => {
             contactNumber: contactNum,
         })
         await doctor.save();
-        return res.status(200).json({ message: "Doctor created Successfully" });
+        return res.status(200).json({ message: "Doctor created Successfully", doctor });
 
     } catch (error) {
         console.error('Error during adding Doctor:', error);
@@ -29,7 +29,7 @@ export const addPrivateClinic = async (req, res) => {
         const doctor = await Doctor.findById(doctorId);
         if (!doctor)
             return res.status(400).json({ message: "Invalid Doctor Id" });
-        else if (doctor.privateClinic !== undefined)
+        else if (doctor.privateClinic.clinicName !== undefined)
             return res.status(400).json({ message: "Private Clinic Information already exists" });
         const clinic = {
             clinicName: clinicName,
@@ -61,7 +61,7 @@ export const updateClinicTiming = async (req, res) => {
         const doctor = await Doctor.findById(doctorId);
         if (!doctor)
             return res.status(400).json({ message: "Invalid Doctor Id" });
-        else if (!doctor.privateClinic)
+        else if (doctor.privateClinic.clinicName === undefined)
             return res.status(400).json({ message: "Private Clinic Information doesn't exists" });
         const clinicTime = {
             start: timings.start,

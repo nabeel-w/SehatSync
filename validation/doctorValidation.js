@@ -7,7 +7,7 @@ export const initDoctorSchema = Joi.object({
         'string.min': 'Name must be at least 3 characters long',
         'any.required': 'Name is required'
     }),
-    specialty: Joi.string().required().messages({
+    specialtiy: Joi.string().required().messages({
         'string.base': 'Specialty should be a string',
         'any.required': 'Specialty is required'
     }),

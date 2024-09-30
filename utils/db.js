@@ -13,4 +13,8 @@ export const connectDb = ()=>{
     }catch(err){
         console.log("Connection to database failed", err);
     }
-}
+};
+
+export const disconnectDb = async () =>{
+    await mongoose.connection.close();
+};
