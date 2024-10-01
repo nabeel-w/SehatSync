@@ -19,7 +19,7 @@ beforeAll(async () => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = new User({
-        name: 'Admin',
+        name: 'Doctor Test',
         email,
         password:hashedPassword,
         role:'Admin',

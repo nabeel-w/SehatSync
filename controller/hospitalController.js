@@ -87,16 +87,20 @@ export const initHospitalBeds = async (req, res) => {
 }
 
 export const getHospitals = async (req, res) => {
-    const { city, emergency, lastId } = req.body
+    const { city, emergency, lastId } = req.body;
 
     try {
         const limit = 10;
-        const query = lastId ? { emergencyServices: emergency, 'address.city': city, bedsAvailable: { $gt: 0 }, _id: { $gt: lastId } } : { emergencyServices: emergency, 'address.city': city, bedsAvailable: { $gt: 0 } }
+        const query = lastId !== undefined 
+            ? { emergencyServices: emergency, 'address.city': city, bedsAvailable: { $gt: 0 }, _id: { $gt: lastId } } 
+            : { emergencyServices: emergency, 'address.city': city, bedsAvailable: { $gt: 0 } };
+
         const hospitals = await Hospital.find(query)
             .select('name address contactNumber bedsAvailable _id')
             .limit(limit)
-            .sort({ _id: 1 })
-        return res.status(200).json({ hospitals: hospitals.length ? hospitals : [] });
+            .sort({ _id: 1 });
+
+        return res.status(200).json({ hospitals: hospitals.length !== 0 ? hospitals : [] });
 
     } catch (error) {
         console.error('Error during fetching hospital Data:', error);
@@ -162,15 +166,20 @@ export const getDoctors = async (req, res) => {
 
     try {
         const hospital = await Hospital.findById(hospitalId);
-        const doctors = [];
-        if (!hospital)
-            return res.status(400).json({ message: "Invalid Hopsital Id" });
-        else if (hospital.doctors.length === 0)
+        
+        if (!hospital) {
+            return res.status(400).json({ message: "Invalid Hospital Id" });
+        } else if (hospital.doctors.length === 0) {
             return res.status(400).json({ message: "No Doctors Found" });
-        hospital.doctors.forEach(async d => {
-            const doc = await Doctor.findById(d).select('_id name specialty contactNumber hospital');
-            doctors.push(doc);
+        }
+
+        // Using Promise.all to wait for all doctor fetches to complete
+        const doctorPromises = hospital.doctors.map(async (d) => {
+            return await Doctor.findById(d).select('_id name specialty contactNumber hospital');
         });
+
+        const doctors = await Promise.all(doctorPromises); // Wait for all promises to resolve
+
         return res.status(200).json({ doctors });
 
     } catch (error) {
@@ -178,6 +187,7 @@ export const getDoctors = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 }
+
 
 export const getDocNameId = async (req, res) => {
     const { hospitalId } = req.body;
@@ -200,7 +210,7 @@ export const getBedBookings = async (req, res) => {
     try {
         const hospital = await Hospital.findById(hospitalId);
         if (!hospital)
-            return res.status(400).json({ message: "Invalid Hopsital Id" });
+            return res.status(400).json({ message: "Invalid Hospital Id" });
         const bookings = await Booking.find({ hospital: hospitalId, bookingType: 'Bed Booking', status: 'Confirmed' })
             .select('_id patientName patientContact bed checkInDate');
         return res.status(200).json({ bookings: bookings.length ? bookings : [] });

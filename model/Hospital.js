@@ -27,7 +27,9 @@ const hospitalSchema = new mongoose.Schema({
   },
   bedsAvailable: {
     type: Number,
-    default: () => this.totalBeds,
+    default: function (){
+      return this.totalBeds;
+    },
   },
   doctors: [{
     type: mongoose.Schema.Types.ObjectId,
