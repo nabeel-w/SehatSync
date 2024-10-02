@@ -4,7 +4,7 @@ import { connectDb, disconnectDb } from '../utils/db.js';
 import User from '../model/User.js';
 
 beforeAll(async ()=>{
-  connectDb();
+  await connectDb();
   await User.deleteMany({});
 })
 

@@ -8,7 +8,7 @@ import { connectDb, disconnectDb } from '../utils/db.js';
 config();
 
 beforeAll(async () => {
-    connectDb();
+    await connectDb();
     await User.deleteMany({});
 });
 

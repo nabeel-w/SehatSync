@@ -20,7 +20,7 @@ const address = {
 let authToken;
 
 beforeAll(async () => {
-    connectDb();
+    await connectDb();
     await User.deleteMany({});
     await Hospital.deleteMany({});
     const email = "john@gmail.com"

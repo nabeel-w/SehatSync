@@ -70,12 +70,12 @@ export const signIn = async (req, res) => {
 
     // Generate Access Token
     const accessToken = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN,
+      expiresIn: '1h',
     });
 
     // Generate Refresh Token
     const refreshToken = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, {
-      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+      expiresIn: '30d',
     });
 
     // Store refresh token in user document

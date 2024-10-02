@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
@@ -20,7 +20,7 @@
     "google-auth-library": "^9.14.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.6.3"
+    "mongoose": "^8.7.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.25.4",

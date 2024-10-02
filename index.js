@@ -25,10 +25,15 @@ app.use('/hospital', hospitalRoute);
 app.use('/booking',bookingRoute);
 
 function startServer() {
-    connectDb(); // Connect to the database
-    return app.listen(PORT, () => {
-        console.log(`Server started at port ${PORT}`);
-    });
+    connectDb()
+        .then(() => {
+            app.listen(PORT, () => {
+                console.log(`Server started at port ${PORT}`);
+            });
+        })
+        .catch((err) => {
+            console.error("Failed to start server due to DB connection issue", err);
+        });
 }
 
 // Only start the server if not in test mode
