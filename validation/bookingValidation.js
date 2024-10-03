@@ -39,7 +39,7 @@ export const bookDoctorSchema = Joi.object({
         'string.hex': 'Hospital Id must be a valid ObjectId',
         'string.length': 'Hospital Id must be 24 characters long',
     }),
-    docterId: Joi.string().required().hex().length(24).messages({
+    doctorId: Joi.string().required().hex().length(24).messages({
         'string.base': 'Doctor Id must be a string',
         'string.hex': 'Doctor Id must be a valid ObjectId',
         'string.length': 'Doctor Id must be 24 characters long',

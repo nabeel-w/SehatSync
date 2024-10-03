@@ -63,14 +63,14 @@ export const bookDoctor = async (req, res) => {
         const doctor = await Doctor.findById(doctorId).session(session);
         if (!doctor) {
             await session.abortTransaction();
-            return res.status(404).json({ message: 'Doctor Id Invalid' });
+            return res.status(400).json({ message: 'Doctor Id Invalid' });
         }
         let maxAppointments, currentAppointments;
         if (hospitalAppointment) {
             const hospitalIndex = doctor.hospital.findIndex(h => h.hospitalId.toString() === hospitalId);
             if (hospitalIndex === -1) {
                 await session.abortTransaction();
-                return res.status(404).json({ message: 'Hospital Id invalid' });
+                return res.status(400).json({ message: 'Hospital Id invalid' });
             }
             maxAppointments = doctor.hospital[hospitalIndex].maxAppointment;
             currentAppointments = doctor.hospital[hospitalIndex].Appointments.length;
