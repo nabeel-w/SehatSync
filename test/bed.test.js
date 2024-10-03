@@ -10,7 +10,7 @@ import bcrypt from 'bcrypt';
 let authToken;
 
 beforeAll(async () => {
-    await connectDb();
+    await connectDb(true);
     await User.deleteMany({});
     const email = "john@gmail.com"
     const password = "StrongPass123!";

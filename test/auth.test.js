@@ -4,11 +4,12 @@ import { connectDb, disconnectDb } from '../utils/db.js';
 import User from '../model/User.js';
 
 beforeAll(async ()=>{
-  await connectDb();
+  await connectDb(true);
   await User.deleteMany({});
 })
 
 afterAll(async () =>{
+  await User.deleteMany({});
   await disconnectDb();
 })
 

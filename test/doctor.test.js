@@ -10,7 +10,7 @@ let authToken; // Variable to hold the auth token
 
 beforeAll(async () => {
     // Simulate user login to get authToken (assuming you have a login route)
-    await connectDb();
+    await connectDb(true);
     await Doctor.deleteMany({});
     await Booking.deleteMany({});
     await User.deleteMany({});

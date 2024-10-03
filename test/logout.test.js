@@ -6,7 +6,7 @@ import { connectDb, disconnectDb } from '../utils/db.js';
 
 describe('Logout Controller', () => {
   beforeAll(async () => {
-    await connectDb();
+    await connectDb(true);
   });
 
   afterAll(async () => {
@@ -62,6 +62,6 @@ describe('Logout Controller', () => {
     expect(response.body.message).toBe('Server error');
 
     // Reconnect to the database for the next test
-    await connectDb();
+    await connectDb(true);
   });
 });

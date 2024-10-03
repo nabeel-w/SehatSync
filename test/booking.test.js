@@ -21,7 +21,7 @@ const address = {
 };
 
 beforeAll(async () => {
-    await connectDb();
+    await connectDb(true);
     await Doctor.deleteMany({});
     await Hospital.deleteMany({});
     await Bed.deleteMany({});

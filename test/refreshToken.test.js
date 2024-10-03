@@ -12,7 +12,7 @@ const email = "john@gmail.com";
 const password = "StrongPass123!";
 
 beforeAll(async () => {
-    await connectDb();
+    await connectDb(true);
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
