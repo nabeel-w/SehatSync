@@ -129,7 +129,7 @@ export const bookingCancel = async (req, res) => {
             await session.abortTransaction();
             return res.status(400).json({ message: "Invalid Booking Id" });
         }
-        else if (!user.Bookings.includes(bookingId) || user.role !== 'Admin') {
+        else if (!user.Bookings.includes(bookingId) || req.user.role !== 'Admin') {
             await session.abortTransaction();
             return res.status(404).json({ message: "Booking Access Forbidden" });
         }

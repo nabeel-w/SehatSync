@@ -142,7 +142,7 @@ describe('Booking Routes', () => {
                     contactNumber: '9876543210',
                     appointmentDate: '2023-10-15T10:00:00Z'
                 });
-            console.log(response.body);
+            
             expect(response.status).toBe(200);
             expect(response.body.message).toBe('Appointment booked successfully');
             expect(response.body.newBooking.patientName).toBe('John Smith');
@@ -159,7 +159,7 @@ describe('Booking Routes', () => {
                     contactNumber: '1234567890',
                     appointmentDate: '2023-10-15T10:00:00Z'
                 });
-            console.log(response.body);
+            
             expect(response.status).toBe(400);
             expect(response.body.message).toBe('Doctor Id Invalid');
         });
@@ -189,7 +189,7 @@ describe('Booking Routes', () => {
                     contactNumber: '9876543210',
                     appointmentDate: '2023-10-15T11:00:00Z'
                 });
-            console.log(response.body);
+            
             expect(response.status).toBe(400);
             expect(response.body.message).toBe('No available appointment slots in the hospital');
         });
