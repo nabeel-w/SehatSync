@@ -72,6 +72,7 @@ hospitalSchema.pre('save', async function (next) {
 
 hospitalSchema.index({ name: 1 })
 hospitalSchema.index({ 'address.city': 1, emergencyServices: 1 });
+hospitalSchema.index({ bedsAvailable: 1 });
 
 const Hospital = mongoose.model('Hospital', hospitalSchema);
 export default Hospital;

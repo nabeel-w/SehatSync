@@ -12,5 +12,7 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+userSchema.index({ Bookings: 1 });
+
 const User = mongoose.model('User', userSchema);
 export default User;

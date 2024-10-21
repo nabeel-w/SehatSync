@@ -57,9 +57,10 @@ const bookingSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-bookingSchema.index({ hospital: 1 }, { sparse: true });
-bookingSchema.index({ doctor: 1 }, { sparse: true });
-bookingSchema.index({ hospital: 1, doctor: 1 }, { sparse: true });
+bookingSchema.index({ doctor: 1 });
+bookingSchema.index({ hospital: 1 });
+bookingSchema.index({ status: 1 });
+bookingSchema.index({ doctor: 1, status: 1 });
 
 const Booking = mongoose.model('Booking', bookingSchema);
 export default Booking;
