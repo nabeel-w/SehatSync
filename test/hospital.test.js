@@ -616,4 +616,62 @@ describe('POST /get-doctor-bookings', () => {
         expect(response.status).toBe(400);
         expect(response.body.message).toBe("Invalid Hopsital OR Doctor Id");
     });
+
+    // Test the getHospitalByName function
+    describe('POST /get-hospital-by-name', () => {
+        it('should return hospitals that match the given name', async () => {
+            // Create a hospital for the test
+            await new Hospital({
+                name: 'Unique Hospital Name',
+                contactNumber: '9090909090',
+                address: address,
+                totalBeds: 50,
+                emergencyServices: true,
+            }).save();
+
+            // Make a request to get hospitals by name
+            const response = await request(app)
+                .post('/hospital/get-hospital-name')
+                .set('Authorization', `${authToken}`)
+                .send({
+                    name: 'Unique Hospital Name',
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.body.hospitals).toHaveLength(1);
+            expect(response.body.hospitals[0].name).toBe('Unique Hospital Name');
+        });
+
+        it('should return an empty array if no hospitals match the given name', async () => {
+            const response = await request(app)
+                .post('/hospital/get-hospital-name')
+                .set('Authorization', `${authToken}`)
+                .send({
+                    name: 'Nonexistent Hospital',
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.body.hospitals).toHaveLength(0);
+        });
+
+        it('should return a server error if there is an issue with the query', async () => {
+            // Mock an error in the Hospital.find method
+            jest.spyOn(Hospital, 'find').mockImplementationOnce(() => {
+                throw new Error('Database query failed');
+            });
+
+            const response = await request(app)
+                .post('/hospital/get-hospital-name')
+                .set('Authorization', `${authToken}`)
+                .send({
+                    name: 'Any Hospital',
+                });
+
+            expect(response.status).toBe(500);
+            expect(response.body.message).toBe('Server error');
+
+            // Restore the original implementation after the test
+            Hospital.find.mockRestore();
+        });
+    });
 });

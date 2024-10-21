@@ -229,4 +229,52 @@ describe('Doctor Routes', () => {
             expect(response.body.message).toBe('Invalid Doctor Id');
         });
     });
+
+    describe('POST /doctor/get-doctor-name', () => {
+        it('should successfully get a doctor by name', async () => {
+            // Create a doctor in the database for testing
+            const doctor = new Doctor({
+                name: 'Dr. Alice',
+                specialty: 'Dermatology',
+                contactNumber: '5555555555',
+            });
+            await doctor.save();
+    
+            const response = await request(app)
+                .post('/doctor/get-doctor-name')
+                .set('Authorization', `${authToken}`)
+                .send({
+                    name: 'Dr. Alice'
+                });
+    
+            expect(response.status).toBe(200);
+            expect(response.body.doctors).toBeInstanceOf(Array);
+            expect(response.body.doctors.length).toBeGreaterThan(0);
+            expect(response.body.doctors[0].name).toBe('Dr. Alice');
+        });
+    
+        it('should return an empty array if no doctor matches the name', async () => {
+            const response = await request(app)
+                .post('/doctor/get-doctor-name')
+                .set('Authorization', `${authToken}`)
+                .send({
+                    name: 'Dr. NonExistent'
+                });
+    
+            expect(response.status).toBe(200);
+            expect(response.body.doctors).toBeInstanceOf(Array);
+            expect(response.body.doctors.length).toBe(0);
+        });
+    
+        it('should return an error if name is missing', async () => {
+            const response = await request(app)
+                .post('/doctor/get-doctor-name')
+                .set('Authorization', `${authToken}`)
+                .send({});
+    
+            expect(response.status).toBe(400); // Adjust if your validation returns a different status
+            expect(response.body.message).toBe('Name is required'); // Adjust if you have a specific error message for this scenario
+        });
+    });
+    
 });

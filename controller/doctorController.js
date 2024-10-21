@@ -108,3 +108,17 @@ export const getClinicBookings = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 }
+
+export const getDoctorByName = async (req, res) =>{
+    const { name } =req.body;
+    try {
+        const doctors = await Doctor.find({ name: name })
+            .select('_id name contactNumber hospital specialty privateClinic')
+            .populate('hospital', 'name contactNumber address')
+            .exec();
+        return res.status(200).json({doctors: doctors.length ? doctors : []});
+    } catch (error) {
+        console.error("Error Getting Doctors by name");
+        return res.status(500).json({ message: 'Server error' });
+    }
+}

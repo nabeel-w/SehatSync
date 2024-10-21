@@ -216,3 +216,11 @@ export const getDoctorBookingsSchema = Joi.object({
         'any.required': 'Doctor Id is required'
     })
 });
+
+export const getHospitalByNameSchema = Joi.object({
+    name: Joi.string().min(3).required().messages({
+        'string.base': 'Name should be a string',
+        'string.min': 'Name must be at least 3 characters long',
+        'any.required': 'Name is required'
+    })
+});

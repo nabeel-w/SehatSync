@@ -91,8 +91,8 @@ export const getHospitals = async (req, res) => {
 
     try {
         const limit = 10;
-        const query = lastId !== undefined 
-            ? { emergencyServices: emergency, 'address.city': city, bedsAvailable: { $gt: 0 }, _id: { $gt: lastId } } 
+        const query = lastId !== undefined
+            ? { emergencyServices: emergency, 'address.city': city, bedsAvailable: { $gt: 0 }, _id: { $gt: lastId } }
             : { emergencyServices: emergency, 'address.city': city, bedsAvailable: { $gt: 0 } };
 
         const hospitals = await Hospital.find(query)
@@ -166,7 +166,7 @@ export const getDoctors = async (req, res) => {
 
     try {
         const hospital = await Hospital.findById(hospitalId);
-        
+
         if (!hospital) {
             return res.status(400).json({ message: "Invalid Hospital Id" });
         } else if (hospital.doctors.length === 0) {
@@ -221,7 +221,7 @@ export const getBedBookings = async (req, res) => {
     }
 }
 
-export const getDoctorBookings = async (req, res) =>{
+export const getDoctorBookings = async (req, res) => {
     const { hospitalId, doctorId } = req.body;
     try {
         const hospital = await Hospital.findById(hospitalId);
@@ -229,11 +229,26 @@ export const getDoctorBookings = async (req, res) =>{
         if (!hospital || !doctor)
             return res.status(400).json({ message: "Invalid Hopsital OR Doctor Id" });
         const bookings = await Booking.find({ hospital: hospitalId, doctor: doctorId, bookingType: 'Doctor Appointment', status: 'Confirmed' })
-        .select('_id patientName patientContact doctor appointmentDate');
+            .select('_id patientName patientContact doctor appointmentDate');
 
         return res.status(200).json({ bookings: bookings.length ? bookings : [] });
     } catch (error) {
         console.error('Error during retrieving Doctor Appointment Data:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export const getHospitalByName = async (req, res) => {
+    const { name } = req.body;
+    try {
+        const hospitals = await Hospital.find({ name: name })
+            .select('_id name contactNumber bedsAvailable emergencyServices address doctors')
+            .populate('doctors', 'name specialty contactNumber hospital.hospitalTimings')
+            .exec();
+        
+        return res.status(200).json({ hospitals: hospitals.length ? hospitals : [] });
+    } catch (error) {
+        console.error("Error Getting Hospitals by name");
         return res.status(500).json({ message: 'Server error' });
     }
 }
