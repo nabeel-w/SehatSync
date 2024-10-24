@@ -28,10 +28,15 @@ export const bookBed = async (req, res) => {
             return res.status(400).json({ message: 'Bed not available' });
         }
         newBooking.status = 'Confirmed';
-        const user = await User.findById(userId).session(session);
-        user.Bookings.push(newBooking._id);
-        await newBooking.save({ session });
-        await user.save({ session });
+        // Save new booking and update user bookings in parallel to minimize waiting time.
+        const saveBooking = newBooking.save({ session });
+        const updateUser = User.findByIdAndUpdate(
+            userId,
+            { $push: { Bookings: newBooking._id } },
+            { session }
+        );
+
+        await Promise.all([saveBooking, updateUser]);
         await session.commitTransaction();
         session.endSession();
 
@@ -55,53 +60,75 @@ export const bookDoctor = async (req, res) => {
     const userId = req.user.userId;
     const session = await mongoose.startSession();
     session.startTransaction();
+
     try {
-        const bookingObject = hospitalId ? { patientName, patientContact: contactNumber, doctor: doctorId, hospital: hospitalId, appointmentDate, bookingType: 'Doctor Appointment' } :
-            { patientName, patientContact: contactNumber, doctor: doctorId, appointmentDate, bookingType: 'Clinic Appointment' };
-        const hospitalAppointment = hospitalId ? true : false;
+        // Construct booking object with conditional values.
+        const bookingObject = {
+            patientName,
+            patientContact: contactNumber,
+            doctor: doctorId,
+            appointmentDate,
+            bookingType: hospitalId ? 'Doctor Appointment' : 'Clinic Appointment',
+            hospital: hospitalId || null
+        };
         const newBooking = new Booking(bookingObject);
-        const doctor = await Doctor.findById(doctorId).session(session);
+
+        // Fetch only necessary fields of the doctor (using projection).
+        const doctor = await Doctor.findById(doctorId, 'hospital privateClinic').session(session);
         if (!doctor) {
             await session.abortTransaction();
             return res.status(400).json({ message: 'Doctor Id Invalid' });
         }
+
         let maxAppointments, currentAppointments;
-        if (hospitalAppointment) {
+        let appointmentsFieldPath;
+
+        // Determine whether it's a hospital or clinic appointment.
+        if (hospitalId) {
             const hospitalIndex = doctor.hospital.findIndex(h => h.hospitalId.toString() === hospitalId);
             if (hospitalIndex === -1) {
                 await session.abortTransaction();
                 return res.status(400).json({ message: 'Hospital Id invalid' });
             }
+
             maxAppointments = doctor.hospital[hospitalIndex].maxAppointment;
             currentAppointments = doctor.hospital[hospitalIndex].Appointments.length;
-
-            if (currentAppointments >= maxAppointments) {
-                await session.abortTransaction();
-                return res.status(400).json({ message: 'No available appointment slots in the hospital' });
-            }
-            doctor.hospital[hospitalIndex].Appointments.push(newBooking._id);
-        }
-        else {
+            appointmentsFieldPath = `hospital.${hospitalIndex}.Appointments`;
+        } else {
             maxAppointments = doctor.privateClinic.maxAppointment;
             currentAppointments = doctor.privateClinic.Appointments.length;
-
-            if (currentAppointments >= maxAppointments) {
-                await session.abortTransaction();
-                return res.status(400).json({ message: 'No available appointment slots in the clinic' });
-            }
-            doctor.privateClinic.Appointments.push(newBooking._id);
+            appointmentsFieldPath = 'privateClinic.Appointments';
         }
+
+        // Check if there's availability.
+        if (currentAppointments >= maxAppointments) {
+            await session.abortTransaction();
+            return res.status(400).json({ message: 'No available appointment slots' });
+        }
+
+        // Push newBooking._id directly into the appointments array in the doctor document.
+        await Doctor.updateOne(
+            { _id: doctorId },
+            { $push: { [appointmentsFieldPath]: newBooking._id } },
+            { session }
+        );
+
         newBooking.status = 'Confirmed';
-        await doctor.save({ session });
-        await newBooking.save({ session });
-        const user = await User.findById(userId).session(session);
-        user.Bookings.push(newBooking._id);
-        await user.save({ session });
+
+        // Save new booking and update user bookings in parallel to minimize waiting time.
+        const saveBooking = newBooking.save({ session });
+        const updateUser = User.findByIdAndUpdate(
+            userId,
+            { $push: { Bookings: newBooking._id } },
+            { session }
+        );
+
+        await Promise.all([saveBooking, updateUser]);
+
         await session.commitTransaction();
         session.endSession();
 
         return res.status(200).json({ message: 'Appointment booked successfully', newBooking });
-
 
     } catch (error) {
         try {
@@ -115,7 +142,8 @@ export const bookDoctor = async (req, res) => {
 
         return res.status(500).json({ message: 'Server error during appointment booking' });
     }
-}
+};
+
 
 export const bookingCancel = async (req, res) => {
     const { bookingId } = req.body;
@@ -123,13 +151,13 @@ export const bookingCancel = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const booking = await Booking.findById(bookingId).session(session);
-        const user = await User.findById(userId).session(session);
-        if (!booking) {
+        const booking = await Booking.findById(bookingId, 'bookingType bed doctor hospital').session(session);
+        const user = await User.findOne({ Bookings: { $in: [bookingId] } }, '_id').session(session);
+        if (!booking || !user) {
             await session.abortTransaction();
             return res.status(400).json({ message: "Invalid Booking Id" });
         }
-        else if (!user.Bookings.includes(bookingId) || req.user.role !== 'Admin') {
+        else if (user._id.toString() !== userId || req.user.role !== 'Admin') {
             await session.abortTransaction();
             return res.status(404).json({ message: "Booking Access Forbidden" });
         }

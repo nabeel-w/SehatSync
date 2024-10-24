@@ -191,7 +191,7 @@ describe('Booking Routes', () => {
                 });
             
             expect(response.status).toBe(400);
-            expect(response.body.message).toBe('No available appointment slots in the hospital');
+            expect(response.body.message).toBe('No available appointment slots');
         });
     });
 

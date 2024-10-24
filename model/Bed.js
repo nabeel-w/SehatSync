@@ -35,8 +35,8 @@ const bedSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-bedSchema.index({ hospital: 1 });
-bedSchema.index({ status: 1 });
+bedSchema.index({ hospital: 1, status: 1 });
+bedSchema.index({ hospital: 1, bedNumber: 1 }, { unique: true });
 
 const Bed = mongoose.model('Bed', bedSchema);
 export default Bed;

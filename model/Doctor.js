@@ -81,7 +81,6 @@ doctorSchema.pre('save', async function (next) {
 doctorSchema.index({ name: 1 });
 doctorSchema.index({ 'privateClinic.address.city': 1 });
 doctorSchema.index({ 'hospital.hospitalId': 1 });
-doctorSchema.index({ specialty: 1 });
 
 const Doctor = mongoose.model('Doctor', doctorSchema);
 export default Doctor;
